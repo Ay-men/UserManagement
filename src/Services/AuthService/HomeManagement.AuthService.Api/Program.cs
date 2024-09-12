@@ -1,6 +1,7 @@
+using HomeManagement.Shared.Logging;
+
 namespace HomeManagement.AuthService.Api
 {
-
     public static class Program
     {
         public static void Main(string[] args)
@@ -15,20 +16,14 @@ namespace HomeManagement.AuthService.Api
                     webBuilder.UseStartup<Startup>();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
-                {
-                    logging.ClearProviders();
-                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-
-                    logging.AddConsole();
-                    logging.AddDebug();
-                    logging.AddEventSourceLogger();
-                })
+        {
+            logging.AddSharedLogging(hostingContext.Configuration);
+        })
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                        // .AddJsonFile("appsettings.Docker.json", optional: true, reloadOnChange: true)
                         .AddCommandLine(args);
                 });
     }

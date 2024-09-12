@@ -5,6 +5,8 @@ using HomeManagement.AuthService.Application.DTOs;
 using HomeManagement.AuthService.Domain.Entities;
 using HomeManagement.AuthService.Domain.Services;
 using HomeManagement.AuthService.Domain.Events;
+using HomeManagement.UserService.Application.Interfaces;
+using HomeManagement.Shared.Exceptions;
 
 namespace HomeManagement.AuthService.Application.Commands
 {
@@ -13,9 +15,9 @@ namespace HomeManagement.AuthService.Application.Commands
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
     private readonly IMapper _mapper;
-    private readonly TokenService _tokenService;
+    private readonly ITokenService _tokenService;
 
-    public LoginUserCommandHandler(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, TokenService tokenService)
+    public LoginUserCommandHandler(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, ITokenService tokenService)
     {
       _userManager = userManager;
       _signInManager = signInManager;
@@ -28,13 +30,13 @@ namespace HomeManagement.AuthService.Application.Commands
       var user = await _userManager.FindByEmailAsync(request.LoginDto.Email);
       if (user == null)
       {
-        throw new ApplicationException("User not found.");
+        throw new UserNotFoundException(request.LoginDto.Email);
       }
 
       var result = await _signInManager.CheckPasswordSignInAsync(user, request.LoginDto.Password, false);
       if (!result.Succeeded)
       {
-        throw new ApplicationException("Invalid login attempt.");
+        throw new InvalidCredentialsException("Invalid login attempt.");
       }
 
       var roles = await _userManager.GetRolesAsync(user);
@@ -45,7 +47,6 @@ namespace HomeManagement.AuthService.Application.Commands
       user.UpdateLastLogin();
       await _userManager.UpdateAsync(user);
 
-      // Raise domain event
       await Domain.DomainEvents.DomainEvents.Raise(new UserLoggedInDomainEvent(user.Id, DateTime.UtcNow));
 
       return new LoginResponseDto

@@ -94,7 +94,7 @@ public class RabbitMQConsumer : BackgroundService
     }
 
 
-    // await _mediator.Send(command, cancellationToken);
+
 
 
   }

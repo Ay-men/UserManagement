@@ -13,7 +13,7 @@ public class UserProfile
   public DateTime CreatedAt { get; private set; }
   public DateTime? UpdatedAt { get; private set; }
 
-  private UserProfile() { } // For EF Core
+  private UserProfile() { }
 
   public UserProfile(Guid id, string email, string firstName, string lastName)
   {

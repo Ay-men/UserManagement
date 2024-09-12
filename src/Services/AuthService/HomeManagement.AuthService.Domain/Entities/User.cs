@@ -10,7 +10,7 @@ namespace HomeManagement.AuthService.Domain.Entities
     public DateTime? LastLoginAt { get; private set; }
     public virtual List<RefreshToken> RefreshTokens { get; private set; } = new List<RefreshToken>();
 
-    private User() { } // Required by EF Core
+    private User() { }
 
     public User(string userName, string email, string firstName, string lastName)
     {
@@ -31,6 +31,6 @@ namespace HomeManagement.AuthService.Domain.Entities
       RefreshTokens.Add(token);
     }
 
-    // Other methods...
+
   }
 }

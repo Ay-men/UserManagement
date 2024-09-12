@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
+using Ocelot.Provider.Eureka;
 
 namespace HomeManagement.ApiGateway
 {
@@ -21,8 +22,8 @@ namespace HomeManagement.ApiGateway
     {
       services.AddControllers();
 
-      services.AddOcelot(Configuration);
-      // .AddEureka();
+      services.AddOcelot(Configuration)
+      .AddEureka();
 
       services.AddSwaggerForOcelot(Configuration);
 

@@ -30,7 +30,7 @@ namespace HomeManagement.AuthService.Domain.ValueObjects
 
     private static bool IsValidEmail(string email)
     {
-      // Simple regex for email validation
+
       string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
       return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
     }

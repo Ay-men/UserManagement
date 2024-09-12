@@ -2,12 +2,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using HomeManagement.AuthService.Domain.Entities;
+using HomeManagement.UserService.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace HomeManagement.AuthService.Domain.Services
 {
-  public class TokenService
+  public class TokenService : ITokenService
   {
     private readonly IConfiguration _configuration;
 

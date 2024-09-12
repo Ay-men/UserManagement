@@ -1,166 +1,55 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/users",
+      "DownstreamPathTemplate": "/api/auth/register",
       "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/gateway/users",
-      "UpstreamHttpMethod": ["GET", "POST"],
-      "ServiceName": "USER.API",
-      "SwaggerKey": "user",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      },
-      "RouteClaimsRequirement": {
-        "userType": "Owner"
-      }
-    },
-    {
-      "DownstreamPathTemplate": "/api/users/{id}",
-      "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/gateway/users/{id}",
-      "UpstreamHttpMethod": ["GET", "PUT", "DELETE"],
-      "ServiceName": "USER.API",
-      "SwaggerKey": "user",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      },
-      "RouteClaimsRequirement": {
-        "userType": "Owner"
-      }
-    },
-    {
-      "DownstreamPathTemplate": "/api/HealthCheck",
-      "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/gateway/UserService/HealthCheck",
-      "UpstreamHttpMethod": ["GET"],
-      "ServiceName": "USER.API",
-      "SwaggerKey": "user"
+      "SwaggerKey": "auth",
+      "UpstreamPathTemplate": "/services/auth/register",
+      "UpstreamHttpMethod": ["Post"],
+      "ServiceName": "AUTH.API"
     },
     {
       "DownstreamPathTemplate": "/api/auth/login",
-      "UpstreamPathTemplate": "/gateway/auth/login",
-      "UpstreamHttpMethod": ["POST"],
       "DownstreamScheme": "http",
       "SwaggerKey": "auth",
+      "UpstreamPathTemplate": "/services/auth/login",
+      "UpstreamHttpMethod": ["Post"],
       "ServiceName": "AUTH.API"
     },
     {
-      "DownstreamPathTemplate": "/api/auth/logout",
-      "UpstreamPathTemplate": "/gateway/auth/logout",
-      "UpstreamHttpMethod": ["POST"],
-      "DownstreamScheme": "http",
-      "SwaggerKey": "auth",
-      "ServiceName": "AUTH.API"
-    },
-    {
-      "DownstreamPathTemplate": "/api/auth/register",
-      "UpstreamPathTemplate": "/gateway/auth/register",
-      "UpstreamHttpMethod": ["POST"],
-      "DownstreamScheme": "http",
-      "SwaggerKey": "auth",
-      "ServiceName": "AUTH.API"
-    },
-    {
-      "DownstreamPathTemplate": "/api/auth/refresh-token",
-      "UpstreamPathTemplate": "/gateway/auth/refresh-token",
-      "UpstreamHttpMethod": ["POST"],
-      "DownstreamScheme": "http",
-      "SwaggerKey": "auth",
-      "ServiceName": "AUTH.API"
-    },
-
-    {
-      "DownstreamPathTemplate": "/api/HealthCheck",
+      "DownstreamPathTemplate": "/api/auth/user/{id}",
       "DownstreamScheme": "http",
       "ServiceName": "AUTH.API",
+      "UpstreamPathTemplate": "/services/auth/user/{id}",
+      "UpstreamHttpMethod": ["Get"],
       "SwaggerKey": "auth",
-      "UpstreamHttpMethod": ["GET", "POST", "PUT", "DELETE"],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RouteClaimsRequirement": {
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "User"
+      }
+    },
 
-      "UpstreamPathTemplate": "/gateway/AuthService/HealthCheck"
-    },
     {
-      "DownstreamPathTemplate": "/api/devices",
+      "DownstreamPathTemplate": "/api/users-profiles/{everything}",
       "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/gateway/devices",
-      "UpstreamHttpMethod": ["GET", "POST"],
-      "ServiceName": "DEVICE.API",
-      "SwaggerKey": "device"
-    },
-    {
-      "DownstreamPathTemplate": "/api/devices/{deviceId}",
-      "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/gateway/devices/{deviceId}",
-      "UpstreamHttpMethod": ["GET", "PUT", "DELETE"],
-      "ServiceName": "DEVICE.API",
-      "SwaggerKey": "device"
-    },
-    {
-      "DownstreamPathTemplate": "/api/devices/{deviceId}/status",
-      "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/gateway/devices/{deviceId}/status",
-      "UpstreamHttpMethod": ["GET"],
-      "ServiceName": "DEVICE.API",
-      "SwaggerKey": "device"
-    },
-    {
-      "DownstreamPathTemplate": "/api/HealthCheck",
-      "UpstreamPathTemplate": "/gateway/HealthCheckd",
-      "UpstreamHttpMethod": ["GET"],
-      "ServiceName": "DEVICE.API",
-      "SwaggerKey": "device"
-    },
-    {
-      "DownstreamPathTemplate": "/api/households",
-      "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/gateway/households",
-      "UpstreamHttpMethod": ["GET", "POST"],
-      "ServiceName": "HOUSEHOLDS.API",
-      "SwaggerKey": "Housing",
+      "ServiceName": "USER.API",
+
+      "UpstreamPathTemplate": "/services/users-profiles/{everything}",
+      "UpstreamHttpMethod": ["Get"],
+      "SwaggerKey": "user",
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
       },
-      "AddHeadersToRequest": {
-        "Authorization": "Bearer {Request.Headers.Authorization}"
+      "RouteClaimsRequirement": {
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "User"
       }
-    },
-    {
-      "DownstreamPathTemplate": "/api/households/{householdId}",
-      "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/gateway/households/{householdId}",
-      "UpstreamHttpMethod": ["GET", "PUT", "DELETE"],
-      "ServiceName": "HOUSEHOLDS.API",
-      "SwaggerKey": "Housing",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      },
-      "AddHeadersToRequest": {
-        "Authorization": "Bearer {Request.Headers.Authorization}"
-      }
-    },
-    {
-      "DownstreamPathTemplate": "/api/HealthCheck",
-      "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/gateway/HealthCheck/hc",
-      "UpstreamHttpMethod": ["GET"],
-      "ServiceName": "HOUSEHOLDS.API",
-      "SwaggerKey": "Housing"
     }
   ],
   "SwaggerEndPoints": [
-    {
-      "Key": "Housing",
-      "Config": [
-        {
-          "Name": "HouseholdService API",
-          "Version": "v1",
-          "Url": "http://households.api:8080/swagger/v1/swagger.json"
-        }
-      ]
-    },
     {
       "Key": "auth",
       "Config": [
@@ -168,16 +57,6 @@
           "Name": "Auth Service API",
           "Version": "v1",
           "Url": "http://auth.api:8080/swagger/v1/swagger.json"
-        }
-      ]
-    },
-    {
-      "Key": "device",
-      "Config": [
-        {
-          "Name": "Device Management Service API",
-          "Version": "v1",
-          "Url": "http://device.api:8080/swagger/v1/swagger.json"
         }
       ]
     },

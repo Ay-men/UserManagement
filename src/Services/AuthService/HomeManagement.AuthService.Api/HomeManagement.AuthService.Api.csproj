@@ -4,6 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DockerComposeProjectPath>../../../../docker-compose.dcproj</DockerComposeProjectPath>
+    <UserSecretsId>23fc9ba8-5b16-4185-8b0a-95a434b38a9b</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
@@ -34,6 +36,8 @@
   <ItemGroup>
     <ProjectReference Include="..\HomeManagement.AuthService.Application\HomeManagement.AuthService.Application.csproj" />
     <ProjectReference Include="..\HomeManagement.AuthService.Infrastructure\HomeManagement.AuthService.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\HomeManagement.Shared\HomeManagement.Shared.csproj" />
+
   </ItemGroup>
 
 </Project>

@@ -15,7 +15,6 @@ namespace HomeManagement.AuthService.Application.Mapping
           .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
           .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
 
-      // Add more mappings as needed
     }
   }
 }

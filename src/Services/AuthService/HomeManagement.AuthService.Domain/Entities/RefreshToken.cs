@@ -12,12 +12,12 @@ namespace HomeManagement.AuthService.Domain.Entities
     public string RevokedByIp { get; private set; }
     public string ReplacedByToken { get; private set; }
     public bool IsActive => Revoked == null && !IsExpired;
-    public virtual Guid UserId { get; set; }  // Add this line
-    public virtual User User { get; set; }    // Add this line
+    public virtual Guid UserId { get; set; }
+    public virtual User User { get; set; }
 
 
 
-    private RefreshToken() { } // Required by EF Core
+    private RefreshToken() { }
 
     public RefreshToken(string token, DateTime expires, string createdByIp, Guid userId)
     {
