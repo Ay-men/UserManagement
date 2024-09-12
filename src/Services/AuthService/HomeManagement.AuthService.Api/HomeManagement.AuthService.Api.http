@@ -1,4 +1,4 @@
-@HomeManagement.AuthService.Api_HostAddress = http://localhost:5270
+@HomeManagement.AuthService.Api_HostAddress = http://localhost:5053
 
 GET {{HomeManagement.AuthService.Api_HostAddress}}/weatherforecast/
 Accept: application/json

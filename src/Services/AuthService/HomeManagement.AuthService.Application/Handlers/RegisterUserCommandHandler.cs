@@ -8,6 +8,8 @@ using HomeManagement.AuthService.Application.DTOs;
 using HomeManagement.AuthService.Domain.Entities;
 using HomeManagement.AuthService.Domain.Interfaces;
 using HomeManagement.AuthService.Domain.Events;
+using HomeManagement.Shared;
+using HomeManagement.AuthService.Domain.Services;
 
 namespace HomeManagement.AuthService.Application.Commands
 {
@@ -17,11 +19,14 @@ namespace HomeManagement.AuthService.Application.Commands
     private readonly IMapper _mapper;
     private readonly IUserRepository _userRepository;
 
-    public RegisterUserCommandHandler(UserManager<User> userManager, IMapper mapper, IUserRepository userRepository)
+    private readonly RabbitMQService _rabbitMQService;
+
+    public RegisterUserCommandHandler(UserManager<User> userManager, IMapper mapper, IUserRepository userRepository, RabbitMQService rabbitMQService)
     {
       _userManager = userManager;
       _mapper = mapper;
       _userRepository = userRepository;
+      _rabbitMQService = rabbitMQService;
     }
 
     public async Task<UserDto> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
@@ -38,7 +43,9 @@ namespace HomeManagement.AuthService.Application.Commands
       await _userManager.AddToRoleAsync(user, "User");
 
       // Raise domain event
-      await Domain.DomainEvents.DomainEvents.Raise(new UserCreatedDomainEvent(user.Id, user.UserName, user.Email));
+      // await Domain.DomainEvents.DomainEvents.Raise(new UserCreatedEvent(user.Id, user.UserName, user.Email, "test", "testet"));
+      var userCreatedEvent = new UserCreatedEvent(user.Id, user.UserName, user.Email, "test", "testet");
+      await _rabbitMQService.PublishEventAsync("user_events", "user.created", userCreatedEvent);
 
       return _mapper.Map<UserDto>(user);
     }

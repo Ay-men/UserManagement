@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HomeManagement.AuthService.Domain\HomeManagement.AuthService.Domain.csproj" />
+    <ProjectReference Include="..\..\HomeManagement.Shared\HomeManagement.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

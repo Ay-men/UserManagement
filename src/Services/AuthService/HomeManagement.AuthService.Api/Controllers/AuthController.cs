@@ -20,6 +20,7 @@ namespace HomeManagement.AuthService.Api.Controllers
       _mediator = mediator;
     }
 
+    [AllowAnonymous]
     [HttpPost("register")]
     public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
     {
@@ -28,6 +29,7 @@ namespace HomeManagement.AuthService.Api.Controllers
       return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponseDto>> Login(LoginDto loginDto)
     {
@@ -38,6 +40,7 @@ namespace HomeManagement.AuthService.Api.Controllers
       return Ok(result);
     }
 
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [Authorize(Roles = "User")]
     [HttpGet("user/{id}")]
     public async Task<ActionResult<UserDto>> GetUserById(Guid id)

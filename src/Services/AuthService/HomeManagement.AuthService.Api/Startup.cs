@@ -20,6 +20,11 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using HomeManagement.AuthService.Application.Validators;
 using Microsoft.OpenApi.Models;
+using Steeltoe.Discovery.Client;
+using Steeltoe.Discovery.Eureka;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using System.Security.Claims;
 
 namespace HomeManagement.AuthService.Api
 {
@@ -44,6 +49,27 @@ namespace HomeManagement.AuthService.Api
                             .AllowAnyMethod()
                             .AllowAnyHeader());
                 });
+
+      // Configure JWT authentication
+      services.AddAuthentication(options =>
+      {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+      })
+      .AddJwtBearer(options =>
+      {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+          ValidateIssuer = true,
+          ValidateAudience = true,
+          ValidateLifetime = true,
+          ValidateIssuerSigningKey = true,
+          ValidIssuer = Configuration["Jwt:Issuer"],
+          ValidAudience = Configuration["Jwt:Audience"],
+          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])),
+          RoleClaimType = ClaimTypes.Role
+        };
+      });
       services.AddSwaggerGen(c =>
       {
         c.SwaggerDoc("v1", new OpenApiInfo { Title = "Auth API", Version = "v1" });
@@ -103,6 +129,7 @@ namespace HomeManagement.AuthService.Api
 
       // Add UserRepository
       services.AddScoped<IUserRepository, UserRepository>();
+      //services.AddServiceDiscovery(o => o.UseEureka());
 
 
       // Add MediatR
@@ -112,6 +139,8 @@ namespace HomeManagement.AuthService.Api
 
       // Add RabbitMQService
       services.AddSingleton<RabbitMQService>();
+
+      services.Configure<HomeManagement.AuthService.Api.RabbitMQSettings>(Configuration.GetSection("RabbitMQ"));
 
       // Add UserRepository
       services.AddScoped<IUserRepository, UserRepository>();
@@ -145,25 +174,7 @@ namespace HomeManagement.AuthService.Api
       .AddEntityFrameworkStores<AuthDbContext>()
       .AddDefaultTokenProviders();
 
-      // Configure JWT authentication
-      services.AddAuthentication(options =>
-      {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-      })
-      .AddJwtBearer(options =>
-      {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-          ValidateIssuer = true,
-          ValidateAudience = true,
-          ValidateLifetime = true,
-          ValidateIssuerSigningKey = true,
-          ValidIssuer = Configuration["Jwt:Issuer"],
-          ValidAudience = Configuration["Jwt:Audience"],
-          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
-        };
-      });
+
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
@@ -203,6 +214,7 @@ namespace HomeManagement.AuthService.Api
 
       // Initialize DomainEvents
       Domain.DomainEvents.DomainEvents.Init(app.ApplicationServices);
+      // TestRabbitMQConnectivity(app);
 
       // Seed Roles
       CreateRoles(serviceProvider).Wait();
@@ -228,5 +240,92 @@ namespace HomeManagement.AuthService.Api
         }
       }
     }
+    private void TestRabbitMQConnectivity(IApplicationBuilder app)
+    {
+      using (var scope = app.ApplicationServices.CreateScope())
+      {
+        try
+        {
+          var factory = new ConnectionFactory()
+          {
+            HostName = Configuration["RabbitMQ:HostName"],
+            UserName = Configuration["RabbitMQ:UserName"],
+            Password = Configuration["RabbitMQ:Password"]
+          };
+          using (var connection = factory.CreateConnection())
+          using (var channel = connection.CreateModel())
+          {
+            // Declare the queue
+            channel.QueueDeclare(queue: "user_created_queue",
+                                 durable: false,
+                                 exclusive: false,
+                                 autoDelete: false,
+                                 arguments: null);
+
+            // Publish a message
+            var testMessage = "Test message for user_created_queue";
+            var body = Encoding.UTF8.GetBytes(testMessage);
+
+            var properties = channel.CreateBasicProperties();
+            properties.Persistent = true;
+
+            channel.BasicPublish(exchange: "",
+                                 routingKey: "user_created_queue",
+                                 basicProperties: properties,
+                                 body: body);
+
+            Console.WriteLine("Successfully published test message to user_created_queue");
+
+            // Check queue message count
+            var messageCount = channel.MessageCount("user_created_queue");
+            Console.WriteLine($"Message count in user_created_queue: {messageCount}");
+
+            // Consume and display the message
+            var consumer = new EventingBasicConsumer(channel);
+            consumer.Received += (model, ea) =>
+            {
+              var messageBody = ea.Body.ToArray();
+              var messageContent = Encoding.UTF8.GetString(messageBody);
+              Console.WriteLine($"Received message: {messageContent}");
+
+              // Acknowledge the message
+              channel.BasicAck(ea.DeliveryTag, false);
+            };
+
+            // Start consuming
+            channel.BasicConsume(queue: "user_created_queue",
+                                 autoAck: false,
+                                 consumer: consumer);
+
+            // Wait a bit to allow the message to be consumed
+            System.Threading.Thread.Sleep(1000);
+          }
+        }
+        catch (Exception ex)
+        {
+          Console.WriteLine($"Error in RabbitMQ test: {ex.Message}");
+        }
+      }
+    }
   }
+
+  namespace HomeManagement.AuthService.Api
+
+  {
+
+    public class RabbitMQSettings
+
+    {
+
+      public string HostName { get; set; }
+
+      public string UserName { get; set; }
+
+      public string Password { get; set; }
+      public string Port { get; set; }
+
+    }
+
+  }
+
 }
