@@ -25,7 +25,8 @@ namespace HomeManagement.AuthService.Api
                 })
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
-                    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
                         // .AddJsonFile("appsettings.Docker.json", optional: true, reloadOnChange: true)
                         .AddCommandLine(args);
