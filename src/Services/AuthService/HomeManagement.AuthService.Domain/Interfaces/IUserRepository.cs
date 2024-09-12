@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using HomeManagement.AuthService.Domain.Entities;
 
 namespace HomeManagement.AuthService.Domain.Interfaces

@@ -1,15 +1,10 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using HomeManagement.AuthService.Application.DTOs;
 using HomeManagement.AuthService.Domain.Entities;
 using HomeManagement.AuthService.Domain.Interfaces;
-using HomeManagement.AuthService.Domain.Events;
 using HomeManagement.Shared;
-using HomeManagement.AuthService.Domain.Services;
 
 namespace HomeManagement.AuthService.Application.Commands
 {

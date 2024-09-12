@@ -1,4 +1,3 @@
-using System;
 using MediatR;
 using HomeManagement.AuthService.Application.DTOs;
 

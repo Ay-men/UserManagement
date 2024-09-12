@@ -1,5 +1,3 @@
-using System;
-
 namespace HomeManagement.AuthService.Application.DTOs
 {
   public class UserDto

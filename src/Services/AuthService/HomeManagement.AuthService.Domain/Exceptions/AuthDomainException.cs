@@ -1,5 +1,3 @@
-using System;
-
 namespace HomeManagement.AuthService.Domain.Exceptions
 {
   public class AuthDomainException : Exception

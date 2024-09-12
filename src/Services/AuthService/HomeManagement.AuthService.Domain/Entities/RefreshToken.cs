@@ -1,5 +1,3 @@
-using System;
-
 namespace HomeManagement.AuthService.Domain.Entities
 {
   public class RefreshToken

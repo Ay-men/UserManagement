@@ -1,6 +1,4 @@
-using System.Security.Claims;
 using System.Text;
-using FluentValidation.AspNetCore;
 using HomeManagement.UserService.Application.Commands;
 using HomeManagement.UserService.Domain.Interfaces;
 using HomeManagement.UserService.Infrastructure.Persistence;
@@ -11,8 +9,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Steeltoe.Discovery.Client;
-using Steeltoe.Discovery.Eureka;
 
 namespace HomeManagement.UserService.Api;
 
@@ -29,11 +25,6 @@ public class Startup
   {
     services.AddControllers();
 
-    services.AddMediatR(cfg =>
-            {
-              cfg.RegisterServicesFromAssembly(typeof(CreateUserProfileCommand).Assembly);
-              //cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-            });
 
     // Add AutoMapper
     // services.AddAutoMapper(typeof(Startup).Assembly, typeof(CreateUserProfileCommand).Assembly);
@@ -45,7 +36,15 @@ public class Startup
 
     // Add Repositories
     services.AddScoped<IUserProfileRepository, UserProfileRepository>();
-
+    services.AddMediatR(cfg =>
+              {
+                cfg.RegisterServicesFromAssembly(typeof(CreateUserProfileCommand).Assembly);
+                //cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+              });
+    // services.AddMediatR(cfg =>
+    // {
+    //   cfg.RegisterServicesFromAssembly(typeof(UserCreatedEventHandler).Assembly);
+    // });
     // Add RabbitMQ Consumer as a hosted service
     services.AddHostedService<RabbitMQConsumer>();
     services.AddSwaggerGen(c =>
@@ -139,6 +138,14 @@ public class Startup
 
   public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
   {
+    // using (var scope = app.ApplicationServices.CreateScope())
+    // {
+    //   var dbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+    //   // await dbContext.Database.EnsureCreatedAsync();
+    //   dbContext.Database.Migrate(); // Apply any pending migrations
+    //   var u = dbContext.UserProfiles.ToList();
+    //   var tt = "ssd";
+    // }
     if (env.IsDevelopment())
     {
       app.UseDeveloperExceptionPage();

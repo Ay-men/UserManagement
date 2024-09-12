@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
@@ -6,58 +5,70 @@ using Polly;
 using Polly.CircuitBreaker;
 using RabbitMQ.Client;
 
-namespace HomeManagement.AuthService.Domain.Services
+public class RabbitMQService
 {
-  public class RabbitMQService
+  private readonly IConfiguration _configuration;
+  private readonly ConnectionFactory _factory;
+  private IConnection _connection;
+  private IModel _channel;
+  private readonly AsyncCircuitBreakerPolicy _circuitBreaker;
+
+  public RabbitMQService(IConfiguration configuration)
   {
-    private readonly IConfiguration _configuration;
-    private readonly ConnectionFactory _factory;
-    private IConnection _connection;
-    private IModel _channel;
-    private readonly AsyncCircuitBreakerPolicy _circuitBreaker;
-
-    public RabbitMQService(IConfiguration configuration)
+    _configuration = configuration;
+    _factory = new ConnectionFactory()
     {
-      _configuration = configuration;
-      _factory = new ConnectionFactory() { HostName = _configuration["RabbitMQ:HostName"] };
+      HostName = _configuration["RabbitMQ:HostName"],
+      UserName = _configuration["RabbitMQ:UserName"],
+      Password = _configuration["RabbitMQ:Password"],
+      Port = int.Parse(_configuration["RabbitMQ:Port"])
+    };
 
-      // Circuit Breaker implementation
-      _circuitBreaker = Policy
-          .Handle<Exception>()
-          .CircuitBreakerAsync(
-              exceptionsAllowedBeforeBreaking: 3,
-              durationOfBreak: TimeSpan.FromSeconds(30)
-          );
-    }
+    _circuitBreaker = Policy
+        .Handle<Exception>()
+        .CircuitBreakerAsync(
+            exceptionsAllowedBeforeBreaking: 3,
+            durationOfBreak: TimeSpan.FromSeconds(30)
+        );
 
-    public async Task PublishEventAsync<T>(string exchangeName, string routingKey, T message)
+    InitializeRabbitMQ();
+  }
+
+  private void InitializeRabbitMQ()
+  {
+    _connection = _factory.CreateConnection();
+    _channel = _connection.CreateModel();
+
+    _channel.ExchangeDeclare(exchange: "user_events", type: ExchangeType.Topic, durable: true);
+    _channel.QueueDeclare(queue: "user_created_queue", durable: true, exclusive: false, autoDelete: false);
+    _channel.QueueBind(queue: "user_created_queue", exchange: "user_events", routingKey: "user.created");
+  }
+
+  public async Task PublishEventAsync<T>(string exchangeName, string routingKey, T message)
+  {
+    await _circuitBreaker.ExecuteAsync(async () =>
     {
-      await _circuitBreaker.ExecuteAsync(async () =>
+      if (_channel == null || _channel.IsClosed)
       {
-        // Circuit Breaker: This method will be protected by the circuit breaker.
-        // If it fails 3 times in a row, the circuit will open for 30 seconds.
-        if (_connection == null || !_connection.IsOpen)
-        {
-          _connection = _factory.CreateConnection();
-        }
+        InitializeRabbitMQ();
+      }
 
-        if (_channel == null || _channel.IsClosed)
-        {
-          _channel = _connection.CreateModel();
-        }
+      var json = JsonSerializer.Serialize(message);
+      var body = Encoding.UTF8.GetBytes(json);
 
-        _channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
+      var properties = _channel.CreateBasicProperties();
+      properties.Persistent = true;
 
-        var json = JsonSerializer.Serialize(message);
-        var body = Encoding.UTF8.GetBytes(json);
+      _channel.BasicPublish(exchange: exchangeName,
+                                routingKey: routingKey,
+                                basicProperties: properties,
+                                body: body);
+    });
+  }
 
-        _channel.BasicPublish(exchange: exchangeName,
-                                    routingKey: routingKey,
-                                    basicProperties: null,
-                                    body: body);
-      });
-    }
-
-    // Remember to implement IDisposable and close connections in Dispose method
+  public void Dispose()
+  {
+    _channel?.Close();
+    _connection?.Close();
   }
 }

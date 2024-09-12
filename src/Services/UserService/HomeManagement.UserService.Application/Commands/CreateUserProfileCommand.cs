@@ -1,4 +1,3 @@
-using System;
 using HomeManagement.UserService.Domain.Entities;
 using HomeManagement.UserService.Domain.Interfaces;
 using MediatR;
